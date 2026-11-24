@@ -1,34 +1,40 @@
 #!/usr/bin/env python3
-"""THE WORLD — 23 November 2026. Entry for news-image-20261123.
+"""Deliver the finished newspaper page for the 23 November 2026 entry.
 
-The program copies the newspaper image beside this file to the
-output directory. It uses only the Python standard library, needs
-no network, and writes the same bytes on every run.
+The picture itself is produced ahead of time and stored next to this
+file as entry.png. All this script does is place a copy of that picture
+where the grader expects it, so the entry can be judged exactly as it
+was built. Nothing is downloaded and nothing is generated at run time:
+the same input always yields the same output bytes.
 
-Run locally:
-    mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
-In the grader it writes to /output/entry.png.
+Where the copy goes: the MAKEFUN_OUTPUT_DIR environment variable, when
+it is set; otherwise the conventional /output directory used by the
+grader. Run it locally with, for example:
+    MAKEFUN_OUTPUT_DIR=out python3 main.py
 """
 
 import os
 import shutil
-import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-SOURCE = HERE / "entry.png"
+
+def resolve_output_dir() -> Path:
+    """Return the directory the finished page should be copied into."""
+    chosen = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
+    return Path(chosen)
 
 
-def main():
-    if not SOURCE.is_file():
-        print("entry.png is missing beside main.py in",
-              HERE, file=sys.stderr)
-        raise SystemExit(1)
-    out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
-    out_dir.mkdir(parents=True, exist_ok=True)
-    # A plain copy: the bytes written are exactly the bytes shipped,
-    # so two runs always write the same bytes.
-    shutil.copyfile(SOURCE, out_dir / "entry.png")
+def main() -> None:
+    """Copy the ready-made entry.png into the output directory."""
+    script_dir = Path(__file__).resolve().parent
+    source_image = script_dir / "entry.png"
+
+    destination_dir = resolve_output_dir()
+    destination_dir.mkdir(parents=True, exist_ok=True)
+
+    destination_image = destination_dir / "entry.png"
+    # A plain copy: the bytes land exactly as they were built.
+    shutil.copyfile(source_image, destination_image)
 
 
 if __name__ == "__main__":
